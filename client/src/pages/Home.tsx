@@ -1,33 +1,19 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
+import { ArrowRight, Boxes, Building2, CheckCircle2, Factory, HeartHandshake, Hospital, MapPinned, ShieldCheck, Stethoscope } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import SiteNav from "@/components/SiteNav";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
+const roles = [
+  { icon: Building2, title: "Pharmacies", copy: "List eligible sealed stock and manage collection through licensed pathways.", href: "/workspace" },
+  { icon: Hospital, title: "Hospitals & clinics", copy: "Submit verified demand that reflects service capacity and patient need.", href: "/workspace" },
+  { icon: Factory, title: "Manufacturers", copy: "Direct approved inventory, returns, and sponsored access through accountable routes.", href: "/workspace" },
+  { icon: HeartHandshake, title: "Patients", copy: "Find support through verified clinics and charitable pharmacies—not anonymous listings.", href: "/patients" },
+];
+
 export default function Home() {
-  // The useAuth hook provides authentication state.
-  // To implement login/logout, call logout(), or start login from an event
-  // handler: onClick={() => startLogin()} (imported from "@/const"). Never call
-  // startLogin() during render (no href={startLogin()}) — it mints a one-time
-  // nonce cookie and must run only at the moment of navigation.
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
-
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
-  );
+  const [, setLocation] = useLocation();
+  return <div className="page-shell"><section className="hero-grid"><SiteNav /><div className="iso-stage" aria-hidden="true"><div className="iso-floor" /><div className="iso-plane plane-teal" /><div className="iso-plane plane-blue" /><div className="iso-plane plane-coral" /><div className="iso-cube" /><div className="iso-chip">TRACEABLE<br />TRANSFER / 01</div></div><span className="floating-tag tag-1"><span className="live-dot" /> REVIEW GATE ACTIVE</span><span className="floating-tag tag-2">US / GB / KE DIRECTORY</span><span className="floating-tag tag-3">LICENSED PATHWAYS ONLY</span><div className="site-width hero-copy"><div className="eyebrow flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#ff7058]" /> Regulated medicine redistribution</div><h1 className="hero-title">Good medicine <span className="accent">deserves a second path.</span></h1><p className="body-copy max-w-[515px] text-[17px]">Global Medicine Match connects eligible, unused medicine with verified organizations through routes that make legal conditions, traceability, and pharmacist review visible before anything moves.</p><div className="mt-8 flex flex-wrap gap-3"><button className="button-primary" onClick={() => setLocation("/workspace")}>Enter partner workspace <ArrowRight size={16} /></button><Link href="/compliance" className="button-secondary no-underline">Explore compliance directory</Link></div><div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-[#557076] mono"><span className="flex items-center gap-1.5"><CheckCircle2 size={13} className="text-[#16b9aa]" /> NO PEER-TO-PEER DISPENSING</span><span className="flex items-center gap-1.5"><CheckCircle2 size={13} className="text-[#16b9aa]" /> REVIEW BEFORE TRANSFER</span></div></div></section>
+    <section className="site-width pb-[90px]"><div className="grid gap-8 lg:grid-cols-[.86fr_1.14fr] lg:items-end"><div><div className="eyebrow">A safety system, not a marketplace</div><h2 className="section-heading mt-4">Every route has a gate.</h2></div><p className="body-copy max-w-[590px] lg:justify-self-end">The platform does not enable direct medicine exchanges between individuals. It screens listing eligibility, surfaces country conditions, and routes access through verified clinics, pharmacies, hospitals, and legal donation programs.</p></div><div className="mt-10 grid gap-3 md:grid-cols-3"><div className="feature-card"><span className="feature-icon teal-surface"><ShieldCheck size={22} /></span><h3 className="text-[22px] font-bold tracking-[-.045em]">Eligibility first</h3><p className="body-copy mt-2 text-[14px]">Opened, expired, recalled, controlled, or cold-chain stock is blocked before review.</p></div><div className="feature-card"><span className="feature-icon blue-surface"><Boxes size={22} /></span><h3 className="text-[22px] font-bold tracking-[-.045em]">Traceable matching</h3><p className="body-copy mt-2 text-[14px]">Listings and requests match only after storage history, expiry, location, and recipient capacity are assessed.</p></div><div className="feature-card"><span className="feature-icon coral-surface"><MapPinned size={22} /></span><h3 className="text-[22px] font-bold tracking-[-.045em]">Local rules visible</h3><p className="body-copy mt-2 text-[14px]">Country profiles show required conditions, restrictions, and review state before a match can proceed.</p></div></div></section>
+    <section className="role-strip"><div className="site-width py-9"><div className="mb-2 flex items-center justify-between gap-4"><div className="eyebrow">Choose your route</div><span className="mono text-[10px] text-[#587076]">4 verified pathways</span></div>{roles.map(role => { const Icon = role.icon; return <div className="role-row" key={role.title}><div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl border border-[#d6e7e6] bg-white text-[#0b8f85]"><Icon size={19} /></span><span className="text-[18px] font-bold tracking-[-.04em]">{role.title}</span></div><span className="mono text-[10px] text-[#687a7d]">VERIFIED PATH</span><p className="body-copy text-[13px]">{role.copy}</p><Link href={role.href} className="button-secondary justify-self-start no-underline">View path <ArrowRight size={14} /></Link></div>; })}</div></section>
+    <section className="site-width grid gap-4 py-[90px] lg:grid-cols-[1fr_.96fr]"><div className="mini-iso"><div className="relative z-10 max-w-[330px]"><div className="eyebrow text-[#a9d8d5]">Compliance comes first</div><h2 className="mt-4 text-[41px] font-bold leading-[.91] tracking-[-.06em]">A match cannot outrun its rules.</h2><p className="mt-5 text-[14px] leading-6 text-[#d6e9e7]">The check layer brings country requirements, medication restrictions, and review decisions into one auditable path.</p><Link href="/compliance" className="button-secondary mt-7 border-white/30 bg-white/10 text-white no-underline">Open directory <ArrowRight size={14} /></Link></div></div><div className="rule-card p-7 sm:p-9"><div className="eyebrow">Transfer sequence / 01—05</div><div className="mt-7 space-y-5">{[["01", "Organization onboarding", "Role, license, country, and service pathway verified."], ["02", "Listing eligibility", "Sealed pack, shelf life, storage, and traceability screened."], ["03", "Recipient request", "Licensed recipient confirms need and dispensing capacity."], ["04", "Compliance review", "Country restrictions and legal route are checked."], ["05", "Authorized transfer", "A reviewer decision and chain-of-custody record unlock the next step."]].map(([step, title, copy]) => <div className="flex gap-4" key={step}><span className="mono pt-1 text-[11px] text-[#0c9f94]">{step}</span><div><h3 className="text-[15px] font-bold tracking-[-.025em]">{title}</h3><p className="mt-1 text-[12px] leading-5 text-[#617278]">{copy}</p></div></div>)}</div></div></section>
+    <footer className="border-t border-[#d9e8e7] bg-white/65 py-8"><div className="site-width flex flex-wrap items-center justify-between gap-4"><div className="flex items-center gap-2 text-[13px] font-bold tracking-[-.03em]"><Stethoscope size={17} className="text-[#16b9aa]" /> Global Medicine Match</div><p className="mono max-w-[590px] text-[10px] leading-5 text-[#62767a]">Prototype notice: this product experience illustrates a compliance-first workflow. It does not itself establish legal eligibility, authorize a transfer, or provide medical advice.</p></div></footer></div>;
 }
