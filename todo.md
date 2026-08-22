@@ -24,3 +24,14 @@
 - [x] Add procedure tests for coverage, dashboard access, medicine discovery, and rate-limited responses.
 - [x] Verify the partner dashboard at the mobile breakpoint.
 - [x] Require a verified partner role for sensitive organization dashboard data and test non-partner denial.
+- [x] Add an AI-assisted compliance recommendation workflow that evaluates donation data against country profiles and always requires final human reviewer approval.
+- [x] Add auditable partner pharmacy inventory-feed connection and ingestion validation with secure configuration boundaries.
+- [x] Add an admin organization-role approval queue for reviewing registrations, assigning verified partner roles, and logging decisions.
+- [x] Add schema, server procedures, unit tests, and responsive interface QA for compliance recommendations, inventory feeds, and role approval.
+- [ ] Activate a specific pharmacy provider transport after its endpoint contract and credentials are supplied and reviewed.
+- [x] Implement signed webhook inventory ingestion with idempotent medicine upserts and reviewer-controlled feed activation.
+- [x] Add automated authorization and callback tests for inventory feed connections and organization-role approval decisions.
+- [x] Add event-path tests for valid, invalid, duplicate, and inactive inventory feed decisions.
+- [x] Add approval-persistence tests for queued registrations, partner assignment, and audit decisions.
+- [x] Add in-memory end-to-end tests for valid, invalid, duplicate, and inactive feed ingestion behavior.
+- [x] Add in-memory end-to-end tests for organization approval persistence, partner assignment, and audit creation.

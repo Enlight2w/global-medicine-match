@@ -30,4 +30,11 @@ describe("platform procedures", () => {
     for (let index = 0; index < 30; index += 1) await limitedCaller.platform.discoverMedicines({ query: "", category: "all", countryCode: "all", urgency: "all" });
     await expect(limitedCaller.platform.discoverMedicines({ query: "", category: "all", countryCode: "all", urgency: "all" })).rejects.toMatchObject({ code: "TOO_MANY_REQUESTS" });
   });
+
+  it("keeps inventory registration and organization decisions behind partner and administrator boundaries", async () => {
+    const userCaller = appRouter.createCaller(contextFor("regular-user"));
+    await expect(userCaller.platform.connectInventoryFeed({ organizationId: 1, providerName: "Example", connectionMode: "webhook", endpoint: "https://example.com/feed" })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(userCaller.platform.adminOrganizationQueue()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(userCaller.platform.decideOrganizationRole({ organizationId: 1, decision: "approved", notes: "Reviewed." })).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
 });

@@ -22,3 +22,17 @@ The workspace uses a transparent prototype dataset for demonstration. Production
 | HTTP safeguards | A local response check confirmed content-type, frame, referrer, permissions, and cross-origin opener protections are applied. | Pass: baseline browser-security headers are present before proxy handling. |
 | Partner dashboard mobile | A mobile preview was captured for the dashboard layout. | Pass: metric cards, chart, inventory cards, and donation history remain usable at the tested breakpoint. |
 | Verified partner authorization | Procedure tests now distinguish unauthenticated, standard authenticated, and verified partner callers. | Pass: only a `partner` or `admin` role can retrieve organization dashboard data; regular authenticated users are denied. |
+
+## AI, Feed, and Approval QA Notes
+
+| Flow | Evidence | Result |
+|---|---|---|
+| AI compliance entry point | The AI compliance screen rendered the donation input, country-profile selection, baseline conditions, and a decision-support disclaimer. Attempting to run the protected action redirected the unauthenticated browser session to secure sign-in. | Pass: the recommendation path is gated by authentication and does not expose the AI call publicly. |
+| Inventory feed workspace | Desktop rendering confirmed both event-push and scheduled-pull connection modes, credential-reference-only input, and a pending activation state. | Pass: the UI does not collect or display raw pharmacy credentials. |
+| Administrator approvals | Desktop rendering confirmed the admin-only review queue, approval criteria, empty state, and audit-oriented role-boundary messaging. | Pass: onboarding decisions are surfaced as an explicit privileged workflow. |
+| Scheduled feed callback | An unauthenticated POST to the inventory-sync callback returned `403`, and the server callback is configured to skip inactive or unreviewed feeds idempotently. | Pass: background-sync entry point is protected until a provider-specific transport and credentials are activated. |
+| Responsive workflows | Mobile previews were captured for the AI assistant, inventory feed registry, and administrator approval queue. | Pass: the core panels stack cleanly and retain their control hierarchy at the tested breakpoint. |
+| Signed inventory event endpoint | A malformed event request without the required feed secret returned `400`; secret-verification tests also reject altered or absent values. | Pass: unauthenticated or malformed payloads do not reach inventory ingestion. |
+| Approval and feed authorization | Procedure tests reject standard users from inventory registration and administrator organization decisions; approval policy tests reserve the `partner` role for an explicit approval. | Pass: privileged workflow boundaries are enforced before database actions occur. |
+| Event and approval policies | The final suite covers a valid active feed, inactive feed, invalid secret, duplicate event, approval role assignment, and hold/reject audit outcomes. | Pass: 19 tests complete successfully across safety, role, feed, and compliance policy paths. |
+| Workflow services | In-memory end-to-end service tests now verify feed record upsert/event persistence and organization review-status, partner-role, and audit persistence behavior. | Pass: 23 tests complete successfully across the full workflow suite. |

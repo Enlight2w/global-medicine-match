@@ -45,6 +45,7 @@ export const medicineListings = mysqlTable("medicineListings", {
   countryCode: varchar("countryCode", { length: 2 }).notNull(),
   reviewStatus: mysqlEnum("reviewStatus", ["pending", "approved", "hold", "rejected"]).default("pending").notNull(),
   reviewNotes: text("reviewNotes"),
+  externalSourceId: varchar("externalSourceId", { length: 180 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -93,6 +94,46 @@ export const statusUpdates = mysqlTable("statusUpdates", {
   previousStatus: varchar("previousStatus", { length: 40 }),
   nextStatus: varchar("nextStatus", { length: 40 }).notNull(),
   message: text("message").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const complianceAssessments = mysqlTable("complianceAssessments", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
+  listingId: int("listingId"),
+  countryCode: varchar("countryCode", { length: 2 }).notNull(),
+  recommendation: mysqlEnum("recommendation", ["human_review", "hold", "block"]).notNull(),
+  rationale: text("rationale").notNull(),
+  requiredChecks: json("requiredChecks").$type<string[]>().notNull(),
+  flags: json("flags").$type<string[]>().notNull(),
+  reviewerRequired: boolean("reviewerRequired").default(true).notNull(),
+  source: mysqlEnum("source", ["deterministic", "ai_assisted"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const inventoryFeedConnections = mysqlTable("inventoryFeedConnections", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  providerName: varchar("providerName", { length: 160 }).notNull(),
+  connectionMode: mysqlEnum("connectionMode", ["webhook", "scheduled_pull"]).notNull(),
+  endpoint: varchar("endpoint", { length: 1000 }).notNull(),
+  credentialReference: varchar("credentialReference", { length: 160 }),
+  syncStatus: mysqlEnum("syncStatus", ["awaiting_credentials", "ready", "paused", "error"]).default("awaiting_credentials").notNull(),
+  lastSyncedAt: timestamp("lastSyncedAt"),
+  scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
+  webhookSecretHash: varchar("webhookSecretHash", { length: 128 }),
+  lastEventId: varchar("lastEventId", { length: 180 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const organizationApprovalAudit = mysqlTable("organizationApprovalAudit", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  reviewerUserId: int("reviewerUserId").notNull(),
+  decision: mysqlEnum("decision", ["approved", "hold", "rejected"]).notNull(),
+  assignedRole: mysqlEnum("assignedRole", ["user", "partner", "admin"]).notNull(),
+  notes: text("notes").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
