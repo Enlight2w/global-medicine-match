@@ -14,3 +14,13 @@
 - [x] Add server procedures and database tables for the regulated workflow.
 - [x] Add unit coverage for eligibility and review-status validation.
 - [x] Verify responsive rendering, keyboard interactions, and core prototype behaviors.
+- [x] Add an interactive verified-partner coverage map with country-level medicine availability indicators.
+- [x] Create a partner organization dashboard for donation history, current eligible inventory, and impact metrics.
+- [x] Build patient medicine search with category, location, and urgency filters while preserving verified legal-channel access.
+- [x] Add server-side validation, authorization boundaries, security headers, rate-limiting safeguards, and audit-safe error handling.
+- [x] Add automated tests and responsive QA for map, dashboard, search, and backend hardening changes.
+- [x] Protect partner-sensitive dashboard data with authenticated organization access controls and test denied access.
+- [x] Add centralized safe error handling for security-sensitive request failures.
+- [x] Add procedure tests for coverage, dashboard access, medicine discovery, and rate-limited responses.
+- [x] Verify the partner dashboard at the mobile breakpoint.
+- [x] Require a verified partner role for sensitive organization dashboard data and test non-partner denial.

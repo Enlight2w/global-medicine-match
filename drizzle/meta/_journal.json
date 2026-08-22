@@ -15,6 +15,13 @@
       "when": 1787425299290,
       "tag": "0001_curious_nomad",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1787426401827,
+      "tag": "0002_nostalgic_mad_thinker",
+      "breakpoints": true
     }
   ]
 }

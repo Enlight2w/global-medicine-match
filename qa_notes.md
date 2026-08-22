@@ -10,3 +10,15 @@
 | Reviewer decision and notification | The browser approved the newly screened listing. | Pass: the listing changed from **Ready** to **Approved**, the approved-count metric updated, and a new automated status-update toast and timeline entry appeared. |
 
 The workspace uses a transparent prototype dataset for demonstration. Production use still requires authenticated roles, persisted review records, verified integration sources, and jurisdiction-specific legal validation.
+
+## Extension QA Notes
+
+| Flow | Evidence | Result |
+|---|---|---|
+| Coverage map | The coverage screen rendered four interactive country nodes, partner locations, aggregate units, and active pathway totals. | Pass: partner coverage remains visible through the built-in route-map visualization. |
+| Patient search | The finder initially returned five mediated-pathway results; searching for **Salbutamol** reduced the result set to the London respiratory pathway only. | Pass: medicine text filtering works while the interface continues to direct patients to a verified partner pathway rather than a direct claim. |
+| Backend safeguards | Type checking and the Vitest suite completed after adding request validation, search sanitization, rate limiting, security headers, and payload bounds. | Pass: seven tests cover existing eligibility/review flows and the new security helpers. |
+| Partner access boundary | Procedure tests confirmed the coverage map remains public while the partner dashboard rejects unauthenticated callers and accepts an authenticated partner caller. | Pass: organization-sensitive dashboard data is no longer exposed through a public procedure. |
+| HTTP safeguards | A local response check confirmed content-type, frame, referrer, permissions, and cross-origin opener protections are applied. | Pass: baseline browser-security headers are present before proxy handling. |
+| Partner dashboard mobile | A mobile preview was captured for the dashboard layout. | Pass: metric cards, chart, inventory cards, and donation history remain usable at the tested breakpoint. |
+| Verified partner authorization | Procedure tests now distinguish unauthenticated, standard authenticated, and verified partner callers. | Pass: only a `partner` or `admin` role can retrieve organization dashboard data; regular authenticated users are denied. |
