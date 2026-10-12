@@ -35,3 +35,4 @@
 - [x] Add approval-persistence tests for queued registrations, partner assignment, and audit decisions.
 - [x] Add in-memory end-to-end tests for valid, invalid, duplicate, and inactive feed ingestion behavior.
 - [x] Add in-memory end-to-end tests for organization approval persistence, partner assignment, and audit creation.
+- [x] Add a public legal-and-safety notice with explicit prototype, medical, transfer, emergency-care, and human-review boundaries.

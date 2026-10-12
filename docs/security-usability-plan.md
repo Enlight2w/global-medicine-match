@@ -45,7 +45,7 @@
 3. Replace free-text organization IDs in the feed form with a server-provided organization selector scoped to the signed-in partner.
 4. Add a reviewer reason requirement for approve/hold/reject and show the exact policy checks that remain unresolved.
 5. Add a “last verified” timestamp and freshness badge to coverage/search results so users do not confuse a snapshot with guaranteed stock.
-6. Add a public “legal and medical disclaimer” link and an emergency-care message on the patient pathway without collecting diagnosis or prescription data.
+6. **Implemented:** added a public legal-and-safety page, linked disclaimers, explicit no-medical-advice/no-transfer language, and an emergency-care message on the patient pathway without collecting diagnosis or prescription data.
 7. Add a persistent “Report a safety or data concern” route with escalation ownership and response-time expectations.
 
 ## Files changed in this pass
@@ -57,7 +57,9 @@
 - `client/src/pages/ComplianceAssistant.tsx`
 - `client/src/pages/InventoryFeeds.tsx`
 - `client/src/pages/AdminApprovals.tsx`
+- `client/src/pages/LegalNotice.tsx`
 - `client/src/index.css`
+- `client/index.html`
 - `server/security.ts`
 - `server/security.test.ts`
 - `server/inventorySync.ts`
