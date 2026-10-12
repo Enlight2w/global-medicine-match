@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { drizzle } from "drizzle-orm/mysql2";
 import { complianceAssessments, InsertUser, inventoryFeedConnections, medicineListings, medicineMatches, organizationApprovalAudit, organizations, recipientRequests, statusUpdates, users } from "../drizzle/schema";
@@ -38,15 +38,21 @@ export async function getUserByOpenId(openId: string) {
   return result[0];
 }
 
-export async function getPlatformOverview() {
+export async function getPlatformOverview(input: { userId: number; isAdmin: boolean }) {
   const db = await getDb();
   if (!db) return { organizations: [], listings: [], requests: [], matches: [], updates: [] };
-  const [organizationRows, listingRows, requestRows, matchRows, updateRows] = await Promise.all([
-    db.select().from(organizations).orderBy(desc(organizations.updatedAt)).limit(30),
-    db.select().from(medicineListings).orderBy(desc(medicineListings.updatedAt)).limit(30),
-    db.select().from(recipientRequests).orderBy(desc(recipientRequests.updatedAt)).limit(30),
-    db.select().from(medicineMatches).orderBy(desc(medicineMatches.updatedAt)).limit(30),
-    db.select().from(statusUpdates).orderBy(desc(statusUpdates.createdAt)).limit(40),
+  const organizationRows = input.isAdmin
+    ? await db.select().from(organizations).orderBy(desc(organizations.updatedAt)).limit(30)
+    : await db.select().from(organizations).where(eq(organizations.ownerUserId, input.userId)).orderBy(desc(organizations.updatedAt)).limit(30);
+  const organizationIds = organizationRows.map(row => row.id);
+  if (!input.isAdmin && organizationIds.length === 0) return { organizations: [], listings: [], requests: [], matches: [], updates: [] };
+  const listingRows = input.isAdmin
+    ? await db.select().from(medicineListings).orderBy(desc(medicineListings.updatedAt)).limit(30)
+    : await db.select().from(medicineListings).where(inArray(medicineListings.organizationId, organizationIds)).orderBy(desc(medicineListings.updatedAt)).limit(30);
+  const [requestRows, matchRows, updateRows] = await Promise.all([
+    input.isAdmin ? db.select().from(recipientRequests).orderBy(desc(recipientRequests.updatedAt)).limit(30) : db.select().from(recipientRequests).where(inArray(recipientRequests.organizationId, organizationIds)).orderBy(desc(recipientRequests.updatedAt)).limit(30),
+    input.isAdmin ? db.select().from(medicineMatches).orderBy(desc(medicineMatches.updatedAt)).limit(30) : listingRows.length === 0 ? Promise.resolve([]) : db.select().from(medicineMatches).where(inArray(medicineMatches.listingId, listingRows.map(row => row.id))).orderBy(desc(medicineMatches.updatedAt)).limit(30),
+    input.isAdmin ? db.select().from(statusUpdates).orderBy(desc(statusUpdates.createdAt)).limit(40) : Promise.resolve([]),
   ]);
   return { organizations: organizationRows, listings: listingRows, requests: requestRows, matches: matchRows, updates: updateRows };
 }
@@ -71,10 +77,13 @@ export async function decideOrganizationRole(input: { organizationId: number; re
   return { organizationId: input.organizationId, decision: input.decision, assignedRole: audit.assignedRole };
 }
 
-export async function listInventoryFeedConnections() {
+export async function listInventoryFeedConnections(input: { userId: number; isAdmin: boolean }) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(inventoryFeedConnections).orderBy(desc(inventoryFeedConnections.updatedAt));
+  if (input.isAdmin) return db.select().from(inventoryFeedConnections).orderBy(desc(inventoryFeedConnections.updatedAt));
+  const ownedOrganizations = await db.select({ id: organizations.id }).from(organizations).where(eq(organizations.ownerUserId, input.userId));
+  if (ownedOrganizations.length === 0) return [];
+  return db.select().from(inventoryFeedConnections).where(inArray(inventoryFeedConnections.organizationId, ownedOrganizations.map(row => row.id))).orderBy(desc(inventoryFeedConnections.updatedAt));
 }
 
 export async function createInventoryFeedConnection(input: { organizationId: number; providerName: string; connectionMode: "webhook" | "scheduled_pull"; endpoint: string; credentialReference?: string }) {

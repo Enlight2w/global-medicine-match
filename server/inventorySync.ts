@@ -2,16 +2,19 @@ import type { Express, Request, Response } from "express";
 import { eq } from "drizzle-orm";
 import { inventoryFeedConnections } from "../drizzle/schema";
 import { getDb, ingestInventoryEvent } from "./db";
+import { allowRateLimitedRequest, inboundFeedEventSchema } from "./security";
 import { sdk } from "./_core/sdk";
 
 export function registerInventorySyncRoutes(app: Express) {
   app.post("/api/inventory-feeds/:feedId/events", async (req: Request, res: Response) => {
     const feedId = Number(req.params.feedId);
     const secret = typeof req.headers["x-feed-secret"] === "string" ? req.headers["x-feed-secret"] : "";
-    const body = req.body as { eventId?: unknown; records?: unknown };
-    if (!Number.isInteger(feedId) || feedId < 1 || !secret || typeof body.eventId !== "string" || !Array.isArray(body.records)) return res.status(400).json({ error: "invalid-feed-event" });
+    const payload = inboundFeedEventSchema.safeParse(req.body);
+    if (!Number.isInteger(feedId) || feedId < 1 || secret.length < 16 || secret.length > 256 || !payload.success) return res.status(400).json({ error: "invalid-feed-event" });
+    const source = req.ip || req.socket.remoteAddress || "unknown";
+    if (!allowRateLimitedRequest(`feed-event:${feedId}:${source}`, 60, 60_000)) return res.status(429).json({ error: "feed-rate-limit" });
     try {
-      const result = await ingestInventoryEvent(feedId, secret, body.eventId, body.records as any[]);
+      const result = await ingestInventoryEvent(feedId, secret, payload.data.eventId, payload.data.records);
       if (!result.accepted) return res.status(result.reason === "invalid-feed-auth" ? 401 : 409).json(result);
       return res.status(202).json(result);
     } catch {

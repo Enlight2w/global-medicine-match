@@ -36,5 +36,6 @@ describe("platform procedures", () => {
     await expect(userCaller.platform.connectInventoryFeed({ organizationId: 1, providerName: "Example", connectionMode: "webhook", endpoint: "https://example.com/feed" })).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(userCaller.platform.adminOrganizationQueue()).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(userCaller.platform.decideOrganizationRole({ organizationId: 1, decision: "approved", notes: "Reviewed." })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(userCaller.platform.recordStatusUpdate({ entityType: "listing", entityId: "LOT-1", nextStatus: "approved" })).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });

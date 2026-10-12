@@ -6,7 +6,7 @@ import { assessDonationCompliance } from "./complianceAssistant";
 import { activateInventoryFeed, assertOrganizationOwner, createInventoryFeedConnection, createOrganizationRequest, decideOrganizationRole, getPlatformOverview, listInventoryFeedConnections, listPendingOrganizations, recordComplianceAssessment } from "./db";
 import { evaluateListingEligibility } from "./eligibility";
 import { canTransitionReviewStatus } from "./reviewStatus";
-import { allowRateLimitedRequest, sanitizeSearchQuery } from "./security";
+import { allowRateLimitedRequest, isSafeProviderEndpoint, sanitizeSearchQuery } from "./security";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -22,7 +22,7 @@ export const appRouter = router({
   auth: router({ me: publicProcedure.query(opts => opts.ctx.user), logout: publicProcedure.mutation(({ ctx }) => { const cookieOptions = getSessionCookieOptions(ctx.req); ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 }); return { success: true } as const; }) }),
   platform: router({
     complianceDirectory: publicProcedure.query(() => complianceDirectory),
-    overview: protectedProcedure.query(() => getPlatformOverview()),
+    overview: partnerProcedure.query(({ ctx }) => getPlatformOverview({ userId: ctx.user.id, isAdmin: ctx.user.role === "admin" })),
     coverage: publicProcedure.query(() => partnerLocations),
     partnerDashboard: partnerProcedure.query(() => partnerDashboardSnapshot),
     discoverMedicines: publicProcedure.input(discoveryInput).query(({ input, ctx }) => { const identity = ctx.user?.openId ?? ctx.req.ip ?? "anonymous"; if (!allowRateLimitedRequest(`discovery:${identity}`)) throw new TRPCError({ code: "TOO_MANY_REQUESTS" }); return filterMedicineAvailability({ ...input, query: sanitizeSearchQuery(input.query) }); }),
@@ -33,8 +33,8 @@ export const appRouter = router({
       await recordComplianceAssessment({ ...assessment, countryCode: input.countryCode });
       return assessment;
     }),
-    inventoryFeeds: partnerProcedure.query(() => listInventoryFeedConnections()),
-    connectInventoryFeed: partnerProcedure.input(z.object({ organizationId: z.number().int().positive(), providerName: z.string().min(2).max(160), connectionMode: z.enum(["webhook", "scheduled_pull"]), endpoint: z.string().url().max(1000), credentialReference: z.string().max(160).optional() })).mutation(async ({ input, ctx }) => {
+    inventoryFeeds: partnerProcedure.query(({ ctx }) => listInventoryFeedConnections({ userId: ctx.user.id, isAdmin: ctx.user.role === "admin" })),
+    connectInventoryFeed: partnerProcedure.input(z.object({ organizationId: z.number().int().positive(), providerName: z.string().trim().min(2).max(160), connectionMode: z.enum(["webhook", "scheduled_pull"]), endpoint: z.string().url().max(1000).refine(isSafeProviderEndpoint, "Use a public HTTPS provider endpoint without credentials or fragments."), credentialReference: z.string().trim().max(160).optional() })).mutation(async ({ input, ctx }) => {
       await assertOrganizationOwner(input.organizationId, ctx.user.id, ctx.user.role === "admin");
       return createInventoryFeedConnection(input);
     }),
@@ -46,7 +46,7 @@ export const appRouter = router({
       const request = await createOrganizationRequest({ ...input, ownerUserId: ctx.user.id, contactEmail });
       return { ...input, ...request, message: "Organization submitted for license and service-pathway review." };
     }),
-    recordStatusUpdate: protectedProcedure.input(z.object({ entityType: z.enum(["organization", "listing", "request", "match"]), entityId: z.string().min(1).max(40), currentStatus: reviewStatus.default("pending"), nextStatus: reviewStatus })).mutation(({ input }) => { if (!canTransitionReviewStatus(input.currentStatus, input.nextStatus)) throw new TRPCError({ code: "BAD_REQUEST" }); return { ...input, createdAt: new Date().toISOString(), message: `Review status updated to ${input.nextStatus}.` }; }),
+    recordStatusUpdate: partnerProcedure.input(z.object({ entityType: z.enum(["organization", "listing", "request", "match"]), entityId: z.string().min(1).max(40), currentStatus: reviewStatus.default("pending"), nextStatus: reviewStatus })).mutation(({ input }) => { if (!canTransitionReviewStatus(input.currentStatus, input.nextStatus)) throw new TRPCError({ code: "BAD_REQUEST" }); return { ...input, createdAt: new Date().toISOString(), message: `Review status updated to ${input.nextStatus}.` }; }),
   }),
 });
 
