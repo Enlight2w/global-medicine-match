@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { drizzle } from "drizzle-orm/mysql2";
-import { complianceAssessments, InsertUser, inventoryFeedConnections, medicineListings, medicineMatches, organizationApprovalAudit, organizations, recipientRequests, statusUpdates, users } from "../drizzle/schema";
+import { complianceAssessments, InsertUser, inventoryFeedActivationAudit, inventoryFeedConnections, inventoryFeedEvents, medicineListings, medicineMatches, organizationApprovalAudit, organizations, recipientRequests, statusUpdates, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { assignedRoleForOrganizationDecision } from "./approvalPolicy";
 import { buildOrganizationApprovalAudit } from "./approvalAuditPolicy";
@@ -102,17 +102,22 @@ export function verifyFeedSecret(secret: string, expectedHash: string | null) {
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
-export async function activateInventoryFeed(feedId: number) {
+export async function activateInventoryFeed(feedId: number, actorUserId: number, reason: string) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
+  const feed = (await db.select().from(inventoryFeedConnections).where(eq(inventoryFeedConnections.id, feedId)).limit(1))[0];
+  if (!feed) throw new Error("Feed not found");
+  if (feed.syncStatus === "ready") return { feedId, syncStatus: "ready" as const, audited: false };
   await db.update(inventoryFeedConnections).set({ syncStatus: "ready" }).where(eq(inventoryFeedConnections.id, feedId));
+  await db.insert(inventoryFeedActivationAudit).values({ feedId, actorUserId, previousStatus: feed.syncStatus, nextStatus: "ready", reason });
+  return { feedId, syncStatus: "ready" as const, audited: true };
 }
 
 export type InboundInventoryRecord = { externalSourceId: string; medicineName: string; dosage: string; quantity: number; quantityUnit?: string; expiryDate: string; traceabilityId: string; storageHistory: string; sealed: boolean; controlled: boolean; recalled: boolean; nonRefrigerated: boolean; countryCode: string };
 export async function ingestInventoryEvent(feedId: number, secret: string, eventId: string, records: InboundInventoryRecord[]) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
-  return processInboundFeedEvent({ findFeed: async id => (await db.select().from(inventoryFeedConnections).where(eq(inventoryFeedConnections.id, id)).limit(1))[0], isSecretValid: verifyFeedSecret, upsertListing: async (organizationId, record) => { const values = { organizationId, medicineName: record.medicineName, dosage: record.dosage, quantity: record.quantity, quantityUnit: record.quantityUnit ?? "packs", expiryDate: new Date(record.expiryDate), traceabilityId: record.traceabilityId, storageHistory: record.storageHistory, sealed: record.sealed, controlled: record.controlled, recalled: record.recalled, nonRefrigerated: record.nonRefrigerated, countryCode: record.countryCode, externalSourceId: record.externalSourceId, reviewStatus: "pending" as const }; const existing = (await db.select().from(medicineListings).where(and(eq(medicineListings.organizationId, organizationId), eq(medicineListings.externalSourceId, record.externalSourceId))).limit(1))[0]; if (existing) await db.update(medicineListings).set(values).where(eq(medicineListings.id, existing.id)); else await db.insert(medicineListings).values(values); }, markProcessed: async (id, event) => { await db.update(inventoryFeedConnections).set({ lastEventId: event, lastSyncedAt: new Date() }).where(eq(inventoryFeedConnections.id, id)); } }, { feedId, secret, eventId, records });
+  return processInboundFeedEvent({ findFeed: async id => (await db.select().from(inventoryFeedConnections).where(eq(inventoryFeedConnections.id, id)).limit(1))[0], isSecretValid: verifyFeedSecret, claimEvent: async (id, event) => { try { await db.insert(inventoryFeedEvents).values({ feedId: id, eventId: event, status: "processing" }); return true; } catch (error) { const duplicate = (error as { code?: string; errno?: number }).code === "ER_DUP_ENTRY" || (error as { errno?: number }).errno === 1062; if (duplicate) return false; throw error; } }, releaseEvent: async (id, event) => { await db.delete(inventoryFeedEvents).where(and(eq(inventoryFeedEvents.feedId, id), eq(inventoryFeedEvents.eventId, event))); }, upsertListing: async (organizationId, record) => { const values = { organizationId, medicineName: record.medicineName, dosage: record.dosage, quantity: record.quantity, quantityUnit: record.quantityUnit ?? "packs", expiryDate: new Date(record.expiryDate), traceabilityId: record.traceabilityId, storageHistory: record.storageHistory, sealed: record.sealed, controlled: record.controlled, recalled: record.recalled, nonRefrigerated: record.nonRefrigerated, countryCode: record.countryCode, externalSourceId: record.externalSourceId, reviewStatus: "pending" as const }; const existing = (await db.select().from(medicineListings).where(and(eq(medicineListings.organizationId, organizationId), eq(medicineListings.externalSourceId, record.externalSourceId))).limit(1))[0]; if (existing) await db.update(medicineListings).set(values).where(eq(medicineListings.id, existing.id)); else await db.insert(medicineListings).values(values); }, markProcessed: async (id, event) => { await db.update(inventoryFeedEvents).set({ status: "processed", processedAt: new Date() }).where(and(eq(inventoryFeedEvents.feedId, id), eq(inventoryFeedEvents.eventId, event))); await db.update(inventoryFeedConnections).set({ lastEventId: event, lastSyncedAt: new Date() }).where(eq(inventoryFeedConnections.id, id)); } }, { feedId, secret, eventId, records });
 }
 
 export async function assertOrganizationOwner(organizationId: number, userId: number, isAdmin: boolean) {

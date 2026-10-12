@@ -6,7 +6,7 @@
 ## Verified baseline and final state
 
 - Existing automated suite before this pass: **23 tests passing** across 12 files.
-- Final automated suite: **26 tests passing** across 12 files.
+- Final automated suite: **27 tests passing** across 12 files.
 - TypeScript check: **passing**.
 - Production build: **passing**. The build still emits a non-blocking bundle-size warning for the main client chunk.
 - Live preview: healthy and rendering the public landing page, compliance directory, workspace, AI compliance, inventory feeds, and administrator approval screens.
@@ -26,14 +26,17 @@
 6. **Add browser hardening headers.** Preserved the existing headers and added production HSTS, cross-origin resource policy, DNS-prefetch control, and no-store on API responses.
 7. **Reduce dependency exposure.** Updated direct runtime packages and compatible transitive resolutions for Drizzle ORM, tRPC, AWS SDK, Axios, MySQL2, Nanoid, lodash, path-to-regexp, proxy-addr, and fast-xml-parser. The final build and full test suite pass.
 
+### P1 — completed in this continuation
+
+1. Replaced the single `lastEventId` replay guard with a durable `inventoryFeedEvents` table keyed by `(feedId, eventId)`, with claim/release/processed states and a unique constraint.
+2. Added `inventoryFeedActivationAudit` persistence and an administrator-only activation control requiring a documented review reason.
+
 ### P1 — recommended next
 
-1. Replace the single `lastEventId` cursor with a durable processed-event table keyed by `(feedId, eventId)` plus a unique constraint. The current cursor prevents an immediate duplicate but does not prevent an older event from being replayed after a newer event.
-2. Add an explicit activation audit trail for feed activation and provider credential binding; never make a feed live solely because a URL was registered.
-3. Add browser-level accessibility tests for keyboard focus, modal escape/focus return, mobile navigation, and protected-route redirects.
-4. Add request-level observability with redacted event/feed identifiers, latency, rejection reason, and correlation IDs; never log webhook secrets or raw patient/health data.
-5. Add a data-retention/privacy control for organization documents and patient pathway requests before collecting anything beyond the current minimal prototype fields.
-6. Schedule a dependency refresh for the remaining low/moderate advisories and the deprecated Recharts 2 branch. Do not make a major chart migration without visual regression coverage.
+1. Add browser-level accessibility tests for keyboard focus, modal escape/focus return, mobile navigation, and protected-route redirects.
+2. Add request-level observability with redacted event/feed identifiers, latency, rejection reason, and correlation IDs; never log webhook secrets or raw patient/health data.
+3. Add a data-retention/privacy control for organization documents and patient pathway requests before collecting anything beyond the current minimal prototype fields.
+4. Schedule a dependency refresh for the remaining low/moderate advisories and the deprecated Recharts 2 branch. Do not make a major chart migration without visual regression coverage.
 
 ### P2 — design and workflow suggestions
 
@@ -62,6 +65,8 @@
 - `server/db.ts`
 - `server/_core/index.ts`
 - `server/platform.test.ts`
+- `server/feedIngestionService.test.ts`
+- `drizzle/0005_motionless_namorita.sql`
 - `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`
 
 ## Residual risk / not claimed

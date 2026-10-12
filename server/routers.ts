@@ -38,7 +38,7 @@ export const appRouter = router({
       await assertOrganizationOwner(input.organizationId, ctx.user.id, ctx.user.role === "admin");
       return createInventoryFeedConnection(input);
     }),
-    activateInventoryFeed: adminProcedure.input(z.object({ feedId: z.number().int().positive() })).mutation(({ input }) => activateInventoryFeed(input.feedId)),
+    activateInventoryFeed: adminProcedure.input(z.object({ feedId: z.number().int().positive(), reason: z.string().trim().min(3).max(1000) })).mutation(({ input, ctx }) => activateInventoryFeed(input.feedId, ctx.user.id, input.reason)),
     adminOrganizationQueue: adminProcedure.query(() => listPendingOrganizations()),
     decideOrganizationRole: adminProcedure.input(z.object({ organizationId: z.number().int().positive(), decision: z.enum(["approved", "hold", "rejected"]), notes: z.string().min(3).max(1000) })).mutation(({ input, ctx }) => decideOrganizationRole({ ...input, reviewerUserId: ctx.user.id })),
     submitOrganization: protectedProcedure.input(z.object({ name: z.string().min(2).max(200), role: z.enum(["pharmacy", "hospital", "manufacturer", "clinic", "ngo"]), licenseNumber: z.string().min(4).max(120), countryCode: z.string().length(2), serviceArea: z.string().min(2).max(180) })).mutation(async ({ input, ctx }) => {

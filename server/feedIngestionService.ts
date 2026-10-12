@@ -7,13 +7,21 @@ export type FeedIngestionStore = {
   isSecretValid: (secret: string, hash: string | null) => boolean;
   upsertListing: (organizationId: number, record: InboundFeedRecord) => Promise<void>;
   markProcessed: (feedId: number, eventId: string) => Promise<void>;
+  claimEvent?: (feedId: number, eventId: string) => Promise<boolean>;
+  releaseEvent?: (feedId: number, eventId: string) => Promise<void>;
 };
 
 export async function processInboundFeedEvent(store: FeedIngestionStore, input: { feedId: number; secret: string; eventId: string; records: InboundFeedRecord[] }) {
   const feed = await store.findFeed(input.feedId);
   const decision = decideFeedEvent({ secretValid: Boolean(feed && store.isSecretValid(input.secret, feed.webhookSecretHash)), syncStatus: feed?.syncStatus ?? "error", duplicate: feed?.lastEventId === input.eventId });
   if (!decision.accepted || decision.reason === "duplicate-event") return { ...decision, processed: 0 };
-  for (const record of input.records) await store.upsertListing(feed!.organizationId, record);
-  await store.markProcessed(feed!.id, input.eventId);
-  return { accepted: true as const, reason: "processed" as const, processed: input.records.length };
+  if (store.claimEvent && !(await store.claimEvent(feed!.id, input.eventId))) return { accepted: true as const, reason: "duplicate-event" as const, processed: 0 };
+  try {
+    for (const record of input.records) await store.upsertListing(feed!.organizationId, record);
+    await store.markProcessed(feed!.id, input.eventId);
+    return { accepted: true as const, reason: "processed" as const, processed: input.records.length };
+  } catch (error) {
+    if (store.releaseEvent) await store.releaseEvent(feed!.id, input.eventId);
+    throw error;
+  }
 }

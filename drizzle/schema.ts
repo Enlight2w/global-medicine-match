@@ -1,4 +1,4 @@
-import { boolean, date, int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, date, int, json, mysqlEnum, mysqlTable, text, timestamp, unique, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -125,6 +125,25 @@ export const inventoryFeedConnections = mysqlTable("inventoryFeedConnections", {
   lastEventId: varchar("lastEventId", { length: 180 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const inventoryFeedEvents = mysqlTable("inventoryFeedEvents", {
+  id: int("id").autoincrement().primaryKey(),
+  feedId: int("feedId").notNull(),
+  eventId: varchar("eventId", { length: 180 }).notNull(),
+  status: mysqlEnum("status", ["processing", "processed"]).default("processing").notNull(),
+  receivedAt: timestamp("receivedAt").defaultNow().notNull(),
+  processedAt: timestamp("processedAt"),
+}, table => ({ feedEventUnique: unique("inventoryFeedEvents_feedId_eventId_unique").on(table.feedId, table.eventId) }));
+
+export const inventoryFeedActivationAudit = mysqlTable("inventoryFeedActivationAudit", {
+  id: int("id").autoincrement().primaryKey(),
+  feedId: int("feedId").notNull(),
+  actorUserId: int("actorUserId").notNull(),
+  previousStatus: mysqlEnum("previousStatus", ["awaiting_credentials", "ready", "paused", "error"]).notNull(),
+  nextStatus: mysqlEnum("nextStatus", ["awaiting_credentials", "ready", "paused", "error"]).notNull(),
+  reason: text("reason").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export const organizationApprovalAudit = mysqlTable("organizationApprovalAudit", {
