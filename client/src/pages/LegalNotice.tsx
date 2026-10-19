@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import SiteNav from "@/components/SiteNav";
 
 const sections = [
-  ["What this product is", "Global Medicine Match is a compliance-first workflow and decision-support platform for regulated medicine redistribution. It is intended to help participating organizations document a proposed route, surface review questions, and keep human approval visible."],
+  ["What this product is", "KindRoute is a compliance-first workflow and decision-support platform for regulated medicine redistribution. It is intended to help participating organizations document a proposed route, surface review questions, and keep human approval visible."],
   ["What this product is not", "The platform is not a pharmacy, prescriber, dispenser, importer, exporter, wholesaler, regulator, insurer, emergency service, or legal adviser. A listing, match, directory entry, map marker, AI recommendation, or status badge is not an offer, reservation, authorization, legal clearance, medical recommendation, or promise that medicine is available."],
   ["Human and local review always controls", "Qualified, licensed people and organizations must independently verify identity, licenses, product quality, storage history, recalls, expiry, dispensing requirements, import or export controls, sanctions, privacy obligations, and every applicable law before any medicine moves. Platform screens and AI outputs are decision support only and may be incomplete or wrong."],
   ["No medical advice or emergency care", "Do not use this site to diagnose, treat, prevent, or manage a health condition, and do not delay professional care because of information shown here. For an emergency or urgent symptom, contact local emergency services or a licensed clinician immediately."],
