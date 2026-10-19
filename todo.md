@@ -36,3 +36,4 @@
 - [x] Add in-memory end-to-end tests for valid, invalid, duplicate, and inactive feed ingestion behavior.
 - [x] Add in-memory end-to-end tests for organization approval persistence, partner assignment, and audit creation.
 - [x] Add a public legal-and-safety notice with explicit prototype, medical, transfer, emergency-care, and human-review boundaries.
+- [x] Add a source-linked Evidence & Research Hub with FDA, EMA, WHO, ClinicalTrials.gov, NCBI, and NCI provenance, update cadence, and human-review governance.

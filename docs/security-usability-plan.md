@@ -48,6 +48,7 @@
 6. **Implemented:** added a public legal-and-safety page, linked disclaimers, explicit no-medical-advice/no-transfer language, and an emergency-care message on the patient pathway without collecting diagnosis or prescription data.
 7. Add a persistent “Report a safety or data concern” route with escalation ownership and response-time expectations.
 8. **Implemented:** replaced illustrative country profiles with sourced, conditional screening requirements for the United States, United Kingdom, and Kenya, including regulator links and explicit “not legal clearance” status language.
+9. **Implemented:** added an Evidence & Research Hub with official source provenance, update cadence, source limitations, and human-review governance. It intentionally does not claim exhaustive coverage of every disease, medicine, innovation, or treatment plan.
 
 ## Files changed in this pass
 
@@ -67,6 +68,8 @@
 - `client/src/pages/PartnerDashboard.tsx`
 - `shared/complianceDirectory.ts`
 - `docs/regulatory-sources-2026-10-12.md`
+- `client/src/pages/KnowledgeHub.tsx`
+- `shared/medicalKnowledgeSources.ts`
 - `server/security.ts`
 - `server/security.test.ts`
 - `server/inventorySync.ts`
