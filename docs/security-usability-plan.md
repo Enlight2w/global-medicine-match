@@ -35,7 +35,7 @@
 
 1. Add browser-level accessibility tests for keyboard focus, modal escape/focus return, mobile navigation, and protected-route redirects.
 2. Add request-level observability with redacted event/feed identifiers, latency, rejection reason, and correlation IDs; never log webhook secrets or raw patient/health data.
-3. Add a data-retention/privacy control for organization documents and patient pathway requests before collecting anything beyond the current minimal prototype fields.
+3. Add a data-retention/privacy control for organization documents and patient pathway requests before collecting anything beyond the current minimal fields.
 4. Schedule a dependency refresh for the remaining low/moderate advisories and the deprecated Recharts 2 branch. Do not make a major chart migration without visual regression coverage.
 
 ### P2 — design and workflow suggestions
@@ -47,6 +47,7 @@
 5. Add a “last verified” timestamp and freshness badge to coverage/search results so users do not confuse a snapshot with guaranteed stock.
 6. **Implemented:** added a public legal-and-safety page, linked disclaimers, explicit no-medical-advice/no-transfer language, and an emergency-care message on the patient pathway without collecting diagnosis or prescription data.
 7. Add a persistent “Report a safety or data concern” route with escalation ownership and response-time expectations.
+8. **Implemented:** replaced illustrative country profiles with sourced, conditional screening requirements for the United States, United Kingdom, and Kenya, including regulator links and explicit “not legal clearance” status language.
 
 ## Files changed in this pass
 
@@ -60,6 +61,12 @@
 - `client/src/pages/LegalNotice.tsx`
 - `client/src/index.css`
 - `client/index.html`
+- `client/src/pages/ComplianceDirectory.tsx`
+- `client/src/pages/CoverageMapPage.tsx`
+- `client/src/pages/PatientAccess.tsx`
+- `client/src/pages/PartnerDashboard.tsx`
+- `shared/complianceDirectory.ts`
+- `docs/regulatory-sources-2026-10-12.md`
 - `server/security.ts`
 - `server/security.test.ts`
 - `server/inventorySync.ts`
@@ -73,6 +80,6 @@
 
 ## Residual risk / not claimed
 
-This scan does **not** establish legal eligibility, clinical safety, penetration-test coverage, or production readiness. The platform remains a prototype until country counsel, licensed pharmacists, provider contracts, credential storage/rotation, durable replay protection, and an independent security review are complete.
+This scan does **not** establish legal eligibility, clinical safety, penetration-test coverage, or production readiness. Country counsel, licensed pharmacists, provider contracts, credential storage/rotation, and an independent security review remain required before operating in any jurisdiction. The directory is a sourced screening aid, not legal clearance.
 
 The dependency audit is improved but not clean: **36 low/moderate advisories remain**. Zero high/critical findings means the current scan found no high/critical production advisory, not that the application is invulnerable.
