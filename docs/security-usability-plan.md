@@ -86,3 +86,8 @@
 This scan does **not** establish legal eligibility, clinical safety, penetration-test coverage, or production readiness. Country counsel, licensed pharmacists, provider contracts, credential storage/rotation, and an independent security review remain required before operating in any jurisdiction. The directory is a sourced screening aid, not legal clearance.
 
 The dependency audit is improved but not clean: **36 low/moderate advisories remain**. Zero high/critical findings means the current scan found no high/critical production advisory, not that the application is invulnerable.
+
+
+## Luxury visual refresh — 2026-11-01
+
+The landing hero now uses a lightweight canvas particle-swarm field inspired by the supplied holographic reference. The visual direction shifts the hero to deep navy, teal glow, and champagne-gold accents while retaining readable glass navigation, accessible focus behavior, reduced-motion support, and the existing legal/safety copy. No external Three.js runtime was added; the effect is rendered locally for a smaller operational surface and predictable deployment.
